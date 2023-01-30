@@ -1,4 +1,4 @@
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)][(https://share.streamlit.io/streamlit/example-app-bert-keyword-extractor/main/app.py)](https://brunobf09-esquadrao-arara-app-i43tb5.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)][(https://brunobf09-esquadrao-arara-app-i43tb5.streamlit.app/)]
 
 # Esquadrao Arara
 
@@ -8,4 +8,4 @@
    multiple NLP embeddings and relies on Transformers 🤗 to create
    keywords/keyphrases that are most similar to a document.
 
-![image](https://user-images.githubusercontent.com/27242399/140746511-1205f24a-869f-4b24-9ed7-9153cfeef8e3.png)
+![image](https://raw.githubusercontent.com/brunobf09/esquadrao-arara/main/app_img.png)
