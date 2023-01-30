@@ -9,92 +9,118 @@ st.title('**Esquadrão Arara**')
 st.text('por: Bruno Brasil')
 st.image("img.png")
 
-#Conexão
-gc = gs.service_account(filename='escavoo-23f562d56bf3.json')
-sheet_url = 'https://docs.google.com/spreadsheets/d/1oLBpmUsttn0DmOAHnYi0cuaqQNCwCHF2mvE0k1m2fz0/edit?usp=sharing'
-sh = gc.open_by_url(sheet_url)
+#options box
+options= st.selectbox('Selecione a função desejada:',["","Disponibilidade","Pau de Sebo", "Quadrinhos","Escala"])
 
-# aba disponibilidade
-def indisp(inicio, fim, mes):
-    ws = sh.worksheet(mes)
-    df = pd.DataFrame(ws.get_all_values()[1:])
-    df[0] = df[0] + " "
-    frame = df.iloc[:, inicio:fim + 1]
-    na = frame.replace('', np.nan).isnull().all(axis=1)
-    naidx = na[na == True].index
-    df = df.iloc[naidx].groupby(by=[32, 33], sort=False).sum()[0]
-    df.name = "Disponíveis"
-    return df
+if options == "Disponibilidade":
+    inicio = st.date_input('Início da Disponibilidade')
+    fim = st.date_input('Término da Disponibilidade')
+    calendario = {1:"JANEIRO", 2:"FEVEREIRO", 3:"MARÇO",4:"ABRIL",5:"MAIO",
+                  6:"JUNHO",7:"JULHO",8:"AGOSTO",9:"SETEMBRO",10:"OUTUBRO",
+                  11:"NOVEMBRO",12:"DEZEMBRO"}
+    mes = calendario.get(inicio.month)
 
-# Coloração da aba pau de sebo
-def desadapt(v):
-    if v > 30 and v < 45:
-        return f"background-color: {'yellow'}"
-    elif v > 45:
-        return f"background-color: {'red'}"
+    if fim > inicio:
+        try:
+            st.table(f.indisp(inicio.day,fim.day,mes))
+        except:
+            pass
 
-# Aba pau de sebo
-def sebo():
-    ws = sh.worksheet("HORAS DE VOO")
-    df = pd.DataFrame(ws.get_all_values()).iloc[18:53, :4]
-    df.columns = ["Piloto", "Horas Voadas","Data",'Último Voo']
-    df = df.drop("Data",axis=1)
-    df["Horas Voadas"] = pd.to_datetime(df["Horas Voadas"], format='%H:%M:%S').apply(lambda x: x.strftime("%H:%M:%S"))
-    df = df.sort_values(by='Horas Voadas', ascending=False)
-    df.set_index("Piloto", inplace=True)
-    df['Último Voo'] = df['Último Voo'].astype('int')
-    # df = df.style.applymap(desadapt, subset=['Último Voo'])
-    return df
+if options == "Pau de Sebo":
+    sebo = f.sebo()
+    sebo = sebo.style.applymap(f.desadapt, subset=['Último Voo'])
+    st.table(sebo)
 
-# Labels quadrinhos
-def label_quad():
-    ws = sh.worksheet("GERAL")
-    df = pd.DataFrame(ws.get_all_values()).iloc[988:]
-    return sorted(df[6].unique())
+if options == "Quadrinhos":
+    labels = f.label_quad()
+    quadrinho = st.selectbox('Selecione o quadrinho desejado:', labels)
 
-# Quadrinhos
-def quad(quadrinho, funcao, op):
-    ws = sh.worksheet("GERAL")
-    df = pd.DataFrame(ws.get_all_values()).iloc[1:]
-    df = df[[0, 1, 5, 6, 9]].replace("", np.nan)
-    df.dropna(inplace=True)
-    df[5] = df[5].apply(lambda x: x.replace(',', "."))
-    df[5] = pd.to_numeric(df[5]).astype('float')
-    df = df.groupby(by=[6, 0, 1, 9]).sum()
-    df = df.loc[quadrinho].sort_values(by=[5])
-    df = df.loc[(funcao, slice(None), op), :]
-    df.columns = ["Quadrinhos"]
-    df['Quadrinhos'] = pd.to_numeric(df.Quadrinhos).astype('int')
+    #Filtro por operacionalidade
+    if quadrinho!="":
+        funcao = st.multiselect('Filtrar por função a bordo:',
+                            ['PILOTO', 'MECÂNICO', 'LOADMASTER'],
+                            ['PILOTO', 'MECÂNICO', 'LOADMASTER'])
 
-    return df
+        op = st.multiselect('Filtrar por operacionalidade:',
+                            ['IN', 'OP', 'PB', 'AL'],
+                            ['IN', 'OP', 'PB', 'AL'])
 
-#Filtro indisp
-def indisp_quad(inicio, fim, mes):
-    ws = sh.worksheet(mes)
-    df = pd.DataFrame(ws.get_all_values()[1:])
-    frame = df.iloc[:, inicio:fim + 1]
-    na = frame.replace('', np.nan).isnull().all(axis=1)
-    naidx = na[na == True].index
-    df = df.iloc[naidx].groupby(by=[0], sort=False).sum()
-    df.name = "Disponíveis"
-    return df.index
+    #checkbox para verificar disponibilidade
+    disp = st.checkbox('DISPONIBILIDADE')
 
-#Tabela de planejamento de horas
-def plan(mes):
-    ws = sh.worksheet("PLANEJAMENTO")
-    meta = pd.DataFrame(ws.get_all_values()[1:]).set_index(0)
-    time = [pd.to_timedelta(meta.iloc[:, i]) for i in range(int(mes))]
-    meta = pd.DataFrame(time).T
-    meta = meta.sum(axis=1) / datetime.timedelta(hours=1)
+    try:
+        #Quadrinho + disponibilidade
+        if disp == True:
+            inicio = st.date_input('Início da Disponibilidade')
+            fim = st.date_input('Término da Disponibilidade')
+            calendario = {1: "JANEIRO", 2: "FEVEREIRO"}
+            mes = calendario.get(inicio.month)
+            ind = f.indisp_quad(inicio.day, fim.day, mes)
+            df = f.quad(quadrinho,funcao,op)
+            st.table(df[df.index.isin(ind, level=1)])
+        # Somente Quadrinho
+        else:
+            st.table(f.quad(quadrinho,funcao,op))
+    except:
+        pass
 
-    ws = sh.worksheet("HORAS DE VOO")
-    voado = pd.DataFrame(ws.get_all_values()).iloc[18:53, :3]
-    voado.columns = ["Piloto", "Horas Voadas", 'Último Voo']
-    voado = pd.to_timedelta(voado['Horas Voadas']) / datetime.timedelta(hours=1)
-    voado.index = meta.index
-    diff = meta - voado
-    diff = pd.DataFrame(diff)
-    diff.columns = ['Meta']
-    diff = diff.sort_values(by='Meta', ascending=False)
+if options == "Escala":
+    #Quadrinhos
+    labels = f.label_quad()
+    quadrinho = st.selectbox('Selecione o quadrinho desejado:', labels)
 
-    return diff
+    if quadrinho!="":
+        #Datas
+        inicio = st.date_input('Início da Disponibilidade')
+        fim = st.date_input('Término da Disponibilidade')
+        calendario = {1: "JANEIRO", 2: "FEVEREIRO"}
+        mes = calendario.get(inicio.month)
+        mes_plan = inicio.month
+        #Disponibilidades
+        ind = f.indisp_quad(inicio.day, fim.day, mes)
+
+        #Planejamento de horas de voo
+        df = f.plan(mes_plan)
+        quad = f.quad(quadrinho, 'PILOTO', ['IN', 'OP', 'PB', 'AL'])
+        quad = quad.reset_index().set_index(1)
+        df = quad.join(df).sort_values(by=['Meta','Quadrinhos'], ascending=[False,True]).drop(0,axis=1)
+        sebo = f.sebo()
+        df = df.join(sebo)
+        prioridade = df[df.index.isin(ind, level=0)]
+        prioridade = prioridade.reset_index().set_index(9) #rescrever depois
+        prioridade.columns = ["Pilotos", "Quadrinhos", 'Meta', 'Horas Voadas','Último Voo']
+        prioridade.Meta = prioridade.Meta.astype('int')
+        prioridade.drop('Horas Voadas', axis=1, inplace=True)
+
+
+        try:
+            st.subheader('Instrutores')
+            IN = prioridade.loc['IN'].set_index("Pilotos")
+            IN = IN.style.applymap(f.desadapt, subset=['Último Voo'])
+            st.table(IN)
+        except KeyError:
+            st.write("Nenhum piloto disponível.")
+
+        try:
+            st.subheader('Operacionais')
+            OP = prioridade.loc['OP'].set_index("Pilotos")
+            OP = OP.style.applymap(f.desadapt, subset=['Último Voo'])
+            st.table(OP)
+        except KeyError as err:
+            st.write("Nenhum piloto disponível.")
+
+        try:
+            st.subheader('Básicos')
+            PB = prioridade.loc['PB'].set_index("Pilotos")
+            PB = PB.style.applymap(f.desadapt, subset=['Último Voo'])
+            st.table(PB)
+        except KeyError as err:
+            st.write("Nenhum piloto disponível.")
+
+        try:
+            st.subheader('Alunos')
+            AL = prioridade.loc['AL'].set_index("Pilotos")
+            AL = AL.style.applymap(f.desadapt, subset=['Último Voo'])
+            st.table(AL)
+        except KeyError as err:
+            st.write("Nenhum piloto disponível.")
