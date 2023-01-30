@@ -1,4 +1,4 @@
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)][(https://brunobf09-esquadrao-arara-app-i43tb5.streamlit.app/)]
+[![Open in Streamlit][(https://static.streamlit.io/badges/streamlit_badge_black_white.svg)][(https://brunobf09-esquadrao-arara-app-i43tb5.streamlit.app/)]
 
 # Esquadrao Arara
 
@@ -9,3 +9,4 @@
    keywords/keyphrases that are most similar to a document.
 
 ![image](https://raw.githubusercontent.com/brunobf09/esquadrao-arara/main/app_img.png)
+![image](https://raw.githubusercontent.com/brunobf09/esquadrao-arara/main/app_img2.png)
