@@ -1,4 +1,4 @@
-[![Open in Streamlit][(https://static.streamlit.io/badges/streamlit_badge_black_white.svg)][(https://brunobf09-esquadrao-arara-app-i43tb5.streamlit.app/)]
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://brunobf09-esquadrao-arara-app-i43tb5.streamlit.app)
 
 # Esquadrao Arara
 
