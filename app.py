@@ -7,7 +7,7 @@ st.set_page_config(page_title="Esquadrão Arara")
 #Page desing
 st.title('**Esquadrão Arara**')
 st.text('por: Bruno Brasil')
-st.image("img.png")
+st.image("arara.png")
 
 #options box
 options= st.selectbox('Selecione a função desejada:',["","Disponibilidade","Pau de Sebo", "Quadrinhos","Escala"])
