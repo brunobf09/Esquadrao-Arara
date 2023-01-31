@@ -89,6 +89,7 @@ if options == "Escala":
         prioridade = df[df.index.isin(ind, level=0)]
         prioridade = prioridade.reset_index().set_index(9) #rescrever depois
         prioridade.columns = ["Pilotos", "Quadrinhos", 'Meta', 'Horas Voadas','Último Voo']
+        prioridade = prioridade[["Pilotos", "Meta", 'Quadrinhos', 'Horas Voadas','Último Voo']]
         prioridade.Meta = prioridade.Meta.astype('int')
         prioridade.drop('Horas Voadas', axis=1, inplace=True)
 
