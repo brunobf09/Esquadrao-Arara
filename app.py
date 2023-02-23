@@ -12,12 +12,13 @@ st.image("arara.png")
 #options box
 options= st.selectbox('Selecione a função desejada:',["","Disponibilidade","Pau de Sebo", "Quadrinhos","Escala"])
 
+calendario = {1:"JANEIRO", 2:"FEVEREIRO", 3:"MARÇO",4:"ABRIL",5:"MAIO",
+                  6:"JUNHO",7:"JULHO",8:"AGOSTO",9:"SETEMBRO",10:"OUTUBRO",
+                  11:"NOVEMBRO",12:"DEZEMBRO"}
+
 if options == "Disponibilidade":
     inicio = st.date_input('Início da Disponibilidade')
     fim = st.date_input('Término da Disponibilidade')
-    calendario = {1:"JANEIRO", 2:"FEVEREIRO", 3:"MARÇO",4:"ABRIL",5:"MAIO",
-                  6:"JUNHO",7:"JULHO",8:"AGOSTO",9:"SETEMBRO",10:"OUTUBRO",
-                  11:"NOVEMBRO",12:"DEZEMBRO"}
     mes = calendario.get(inicio.month)
 
     if fim > inicio:
@@ -53,7 +54,6 @@ if options == "Quadrinhos":
         if disp == True:
             inicio = st.date_input('Início da Disponibilidade')
             fim = st.date_input('Término da Disponibilidade')
-            calendario = {1: "JANEIRO", 2: "FEVEREIRO"}
             mes = calendario.get(inicio.month)
             ind = f.indisp_quad(inicio.day, fim.day, mes)
             df = f.quad(quadrinho,funcao,op)
@@ -73,7 +73,6 @@ if options == "Escala":
         #Datas
         inicio = st.date_input('Início da Disponibilidade')
         fim = st.date_input('Término da Disponibilidade')
-        calendario = {1: "JANEIRO", 2: "FEVEREIRO"}
         mes = calendario.get(inicio.month)
         mes_plan = inicio.month
         #Disponibilidades
