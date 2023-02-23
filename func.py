@@ -34,7 +34,7 @@ def sebo():
     df = pd.DataFrame(ws.get_all_values()).iloc[18:53, :4]
     df.columns = ["Piloto", "Horas Voadas","Data",'Último Voo']
     df = df.drop("Data",axis=1)
-    df["Horas Voadas"] = pd.to_datetime(df["Horas Voadas"], format='%H:%M:%S').apply(lambda x: x.strftime("%H:%M:%S"))
+    pd.to_timedelta(df["Horas Voadas"]) / datetime.timedelta(hours=1)
     df = df.sort_values(by='Horas Voadas', ascending=False)
     df.set_index("Piloto", inplace=True)
     df['Último Voo'] = df['Último Voo'].astype('int')
