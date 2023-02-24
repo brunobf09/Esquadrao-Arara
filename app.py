@@ -21,7 +21,7 @@ if options == "Disponibilidade":
     fim = st.date_input('Término da Disponibilidade')
     mes = calendario.get(inicio.month)
 
-    if fim > inicio:
+    if fim >= inicio:
         try:
             st.table(f.indisp(inicio.day,fim.day,mes))
         except:
