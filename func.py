@@ -2,7 +2,7 @@
 import gspread as gs
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from haversine import haversine, Unit
 
 #Conexão
@@ -36,7 +36,7 @@ def sebo():
     df = pd.DataFrame(ws.get_all_values()).iloc[18:53, :4]
     df.columns = ["Piloto", "Horas Voadas","Data",'Último Voo']
     df = df.drop("Data",axis=1)
-    pd.to_timedelta(df["Horas Voadas"]) / datetime.timedelta(hours=1)
+    pd.to_timedelta(df["Horas Voadas"]) / timedelta(hours=1)
     df = df.sort_values(by='Horas Voadas', ascending=False)
     df.set_index("Piloto", inplace=True)
     df['Último Voo'] = df['Último Voo'].astype('int')
@@ -82,12 +82,12 @@ def plan(mes):
     meta = pd.DataFrame(ws.get_all_values()[1:]).set_index(0)
     time = [pd.to_timedelta(meta.iloc[:, i]) for i in range(int(mes))]
     meta = pd.DataFrame(time).T
-    meta = meta.sum(axis=1) / datetime.timedelta(hours=1)
+    meta = meta.sum(axis=1) / timedelta(hours=1)
 
     ws = sh.worksheet("HORAS DE VOO")
     voado = pd.DataFrame(ws.get_all_values()).iloc[18:53, :3]
     voado.columns = ["Piloto", "Horas Voadas", 'Último Voo']
-    voado = pd.to_timedelta(voado['Horas Voadas']) / datetime.timedelta(hours=1)
+    voado = pd.to_timedelta(voado['Horas Voadas']) / timedelta(hours=1)
     voado.index = meta.index
     diff = meta - voado
     diff = pd.DataFrame(diff)
