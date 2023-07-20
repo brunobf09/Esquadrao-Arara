@@ -4,3 +4,4 @@ gspread==5.7.2
 DateTime==5.0
 numpy==1.21.3
 haversine==2.8.0
+openpyxl==3.0.9 
