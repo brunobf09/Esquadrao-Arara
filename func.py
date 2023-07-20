@@ -2,7 +2,7 @@
 import gspread as gs
 import pandas as pd
 import numpy as np
-from datetime import date, time, datetime, timedelta
+from datetime import datetime, timedelta
 from haversine import haversine, Unit
 
 #Conexão
