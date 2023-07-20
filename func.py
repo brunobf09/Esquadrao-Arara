@@ -1,13 +1,15 @@
-# Functions
+# Libs
 import gspread as gs
 import pandas as pd
 import numpy as np
-import datetime
+from datetime import datetime, timedelta
+from haversine import haversine, Unit
 
 #Conexão
 gc = gs.service_account(filename='escavoo-23f562d56bf3.json')
 sheet_url = 'https://docs.google.com/spreadsheets/d/1oLBpmUsttn0DmOAHnYi0cuaqQNCwCHF2mvE0k1m2fz0/edit?usp=sharing'
 sh = gc.open_by_url(sheet_url)
+
 
 # aba disponibilidade
 def indisp(inicio, fim, mes):
@@ -47,7 +49,7 @@ def label_quad():
     df = pd.DataFrame(ws.get_all_values()).iloc[988:]
     return sorted(df[6].unique())
 
-# Quadrinhos
+#Quadrinhos
 def quad(quadrinho, funcao, op):
     ws = sh.worksheet("GERAL")
     df = pd.DataFrame(ws.get_all_values()).iloc[1:]
@@ -93,3 +95,106 @@ def plan(mes):
     diff = diff.sort_values(by='Meta', ascending=False)
 
     return diff
+
+#Arrendodamento
+def mround(number, multiple):
+    return multiple * round(number / multiple)
+
+#Conversor de hora
+def convert_time(number,string=True):
+  h = str(number).split('.')[0]
+  m = int(float('0'+'.'+str(number).split('.')[1])*60)
+  m = mround(m,5)
+  if string==True:
+      if m<10:
+        return str(f'{h}'+':'+f'0{m}')
+      else:
+        return str(f'{h}'+':'+f'{m}')
+  else:
+    return int(h),m
+
+#Combustível em rota
+def fuel_trip(ete_route, ete_altn):
+    fuel_trip = int(700*(ete_route+ete_altn+0.75))
+    return fuel_trip
+
+#função planejamento
+def braplan(data,hora,rota,alternativa):
+    icao = pd.read_excel("Plan/ICAO.xlsx").set_index("DESIG")
+    plans = []
+    for i in range(len(alternativa)):
+        #Ajuste da data para Datetime
+        dep_dt = datetime.combine(data,hora)
+        # format_string = "%d-%m-%Y"
+        # dep_dt = datetime.strptime(date_string, format_string)
+
+        #Campo Hora(Z)
+        if i ==0:
+            hora_z = hora.strftime("%H:%M")
+        else:
+            dep_dt = eta + timedelta(hours=+1, minutes=+30)
+            hora_z = dep_dt.strftime("%H:%M")
+
+        #Campo DEP, ARR e ALT
+        dep = rota[i]
+        arr = rota[i+1]
+        alt = alternativa[i]
+
+        #Campo TEMPO SOLO
+        tempo_solo = "1:30"
+
+        #trip
+        trip = rota[i:i+2] + [alt]
+
+        #Campo TEV
+        coo=[]
+        for j in trip:
+            coo.append(((icao.loc[j].LAT, icao.loc[j].LON)))
+
+        ete_route = haversine(coo[0], coo[1], unit=Unit.NAUTICAL_MILES)/215
+        tev_route = convert_time(ete_route)
+
+        #Campo ETA
+        h,m = convert_time(ete_route, string=False)
+        eta = dep_dt + timedelta(hours=+h, minutes=+m)
+        eta_str = eta.strftime("%H:%M")
+
+        #Campo TEV ALT
+        ete_alt = haversine(coo[1], coo[2], unit=Unit.NAUTICAL_MILES)/215
+        tev_alt = convert_time(ete_alt)
+
+        #Campo COMB
+        trip_fuel = fuel_trip(ete_route, ete_alt)
+        comb = mround(trip_fuel,50)
+        comb_route = fuel_trip(ete_route,-0.75)
+        comb_route = mround(comb_route,50)
+
+        #Linha do planejamento
+        plan = {"DATA": data,
+            "HORA(Z)":hora_z,
+            "DEP":dep,
+            "TEV":tev_route,
+            "ARR":arr,
+            "ETA(Z)":eta_str,
+            "ALT":alt,
+            "TEV ALT":tev_alt,
+            "COMB":comb,
+            "COMB_ROUTE": comb_route
+           }
+        plans.append(plan)
+
+    return pd.DataFrame(plans)
+
+#Não abastece
+def disp(df, noabast, PBO):
+    for i in range(len(df)):
+        if df.loc[i, "ARR"] in noabast:
+            df.loc[i, "COMB"] = df.loc[i + 1, "COMB"] + df.loc[i, "COMB_ROUTE"]
+    try:
+        # Disponibilidade
+        df["DISP"] = 21000 - df.COMB - PBO
+        df.DISP = df.DISP.clip(0,5000)
+        df = df.drop('COMB_ROUTE', axis=1)
+    except:
+        pass
+    return df
