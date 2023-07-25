@@ -4,8 +4,6 @@ import func as f
 import pandas as pd
 import datetime
 
-st.set_page_config(page_title="Esquadrão Arara")
-
 # Sidebar
 with st.sidebar:
     st.markdown("<h1 style='text-align: center; margin-top:-80px; color: black;'>Tudo Sob Nossas Asas!</h1>", unsafe_allow_html=True)
@@ -203,4 +201,10 @@ if pages == "Planejamento de Missão":
 
     if i==n_days:
         st.title("Planejamento Completo")
-        st.table(pd.concat(total_plan))
+        edit = st.checkbox('Editar', key=f'edit')
+        end_plan = pd.concat(total_plan)
+        if edit==True:
+            edit_plan = end_plan.astype(str)
+            st.data_editor(edit_plan, hide_index=True)
+        else:
+            st.table(end_plan)
