@@ -118,6 +118,7 @@ if pages == "Escala de Voo":
             prioridade.columns = ["Pilotos", "Quadrinhos", 'Meta', 'Horas Voadas','Último Voo']
             prioridade = prioridade[["Pilotos", "Meta", 'Quadrinhos', 'Horas Voadas','Último Voo']]
             prioridade.Meta = prioridade.Meta.astype('int')
+            prioridade['Último Voo'] = prioridade['Último Voo'].astype('int')
             prioridade.drop('Horas Voadas', axis=1, inplace=True)
 
 
