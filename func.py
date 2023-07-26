@@ -36,11 +36,10 @@ def sebo():
     df = pd.DataFrame(ws.get_all_values()).iloc[18:53, :4]
     df.columns = ["Piloto", "Horas Voadas","Data",'Último Voo']
     df = df.drop("Data",axis=1)
-    pd.to_timedelta(df["Horas Voadas"]) / timedelta(hours=1)
-    df = df.sort_values(by='Horas Voadas', ascending=False)
+    df["hora"] = pd.to_timedelta(df["Horas Voadas"]) / timedelta(hours=1)
+    df = df.sort_values(by='hora', ascending=False).drop('hora',axis=1)
     df.set_index("Piloto", inplace=True)
     df['Último Voo'] = df['Último Voo'].astype('int')
-    # df = df.style.applymap(desadapt, subset=['Último Voo'])
     return df
 
 # Labels quadrinhos
