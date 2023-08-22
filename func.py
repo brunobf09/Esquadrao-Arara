@@ -4,12 +4,35 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from haversine import haversine, Unit
+import base64
+import streamlit as st
 
 #Conexão
 gc = gs.service_account(filename='escavoo-23f562d56bf3.json')
 sheet_url = 'https://docs.google.com/spreadsheets/d/1oLBpmUsttn0DmOAHnYi0cuaqQNCwCHF2mvE0k1m2fz0/edit?usp=sharing'
 sh = gc.open_by_url(sheet_url)
 
+
+#image as base
+def get_img_as_base64(file):
+    with open(file, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+def landpage():
+    img = get_img_as_base64("Pic/arara.png")
+    page_bg_img = f"""
+    <style>
+    [data-testid="stAppViewContainer"] > .main {{
+    background-image: url("data:image/png;base64,{img}");
+    background-size: cover;
+    }}
+    [data-testid="stHeader"] {{
+    background: rgba(0,0,0,0);
+    }}
+    </style>
+    """
+    return page_bg_img
 
 # aba disponibilidade
 def indisp(inicio, fim, mes):
@@ -197,3 +220,8 @@ def disp(df, noabast, PBO):
     except:
         pass
     return df
+
+@st.cache_data
+def convert_df(df):
+        # IMPORTANT: Cache the conversion to prevent computation on every rerun
+        return df.to_csv().encode('utf-8')
