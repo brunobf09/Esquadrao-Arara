@@ -4,12 +4,16 @@ import func as f
 import pandas as pd
 import datetime
 
+st.set_page_config(page_title="Esquadrão Arara")
+
 # Sidebar
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center; margin-top:-80px; color: black;'>Tudo Sob Nossas Asas!</h1>", unsafe_allow_html=True)
-
-    st.markdown(
-        """
+    #Style
+    st.markdown("<h1 style='text-align: center; "
+                "margin-top:-80px; color: "
+                "black;'"
+                ">Tudo Sob Nossas Asas!</h1>", unsafe_allow_html=True)
+    st.markdown( """
         <style>
             [data-testid=stSidebar] [data-testid=stImage]{
                 text-align: center;
@@ -20,19 +24,20 @@ with st.sidebar:
                 width: 50%;
             }
         </style>
-        """, unsafe_allow_html=True
-    )
-    # st.markdown("<h1 style='text-align: center; color: black;'>Tudo Sob Nossas Asas!</h1>", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+    #content
     st.image("Pic/bolacha.png")
     pages = st.selectbox('Selecione a página desejada', ['','Escala de Voo','Planejamento de Missão'])
 
+#landpage
 if pages == '':
-    # Page desing
-    st.title('**Esquadrão Arara**')
-    st.text('por: Bruno Brasil')
-    st.image("Pic/arara.png")
+    #Style
+    st.markdown(f.landpage(), unsafe_allow_html=True)
+    st.markdown("<h1 style= margin-top:-100px;>"
+                "Bem-vindo ao Esquadrão Arara</h1>",unsafe_allow_html=True)
+    st.markdown('<p style= margin-top:-45px;> Por: Bruno Brasil</p>',unsafe_allow_html=True)
 
-#Pages
+#Page - Escala
 if pages == "Escala de Voo":
     # Page desing
     st.title('**Escala de Voo**')
@@ -154,6 +159,7 @@ if pages == "Escala de Voo":
             except KeyError as err:
                 st.write("Nenhum piloto disponível.")
 
+#Page - Plan
 if pages == "Planejamento de Missão":
     #Título da página
     st.title('**Planejamento de Missão**')
@@ -166,7 +172,7 @@ if pages == "Planejamento de Missão":
         pb = {'FAB2800':12924,'FAB2802':12584,'FAB2803':12587,'FAB2805':12227,'FAB2809':12446}
         PBO = pb.get(aeronave) + 300 + (tripul*100)
 
-    #Importando tabela icao
+    #Importando tabela icao (AJUSTAR ESSE DATAFRAME)
     icao = pd.read_excel("Plan/ICAO.xlsx").set_index("DESIG")
     labels = icao.index.to_list()
     labels.extend(icao.index)
@@ -200,6 +206,7 @@ if pages == "Planejamento de Missão":
             check=False
             break
 
+    #End Plan
     if i==n_days:
         st.title("Planejamento Completo")
         edit = st.checkbox('Editar', key=f'edit')
@@ -209,3 +216,11 @@ if pages == "Planejamento de Missão":
             st.data_editor(edit_plan, hide_index=True)
         else:
             st.table(end_plan)
+            # Download button
+            csv = f.convert_df(end_plan)
+            st.download_button(
+                label="Download Excel",
+                data=csv,
+                file_name='Araraplan.csv',
+                mime='text/csv',
+            )
