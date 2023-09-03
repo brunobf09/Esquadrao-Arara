@@ -4,14 +4,37 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from haversine import haversine, Unit
+import base64
+from io import BytesIO
+import streamlit as st
+from openpyxl import load_workbook
 
 #Conexão
 gc = gs.service_account(filename='escavoo-23f562d56bf3.json')
 sheet_url = 'https://docs.google.com/spreadsheets/d/1oLBpmUsttn0DmOAHnYi0cuaqQNCwCHF2mvE0k1m2fz0/edit?usp=sharing'
 sh = gc.open_by_url(sheet_url)
 
+#image as base
+def get_img_as_base64(file):
+    with open(file, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-# aba disponibilidade
+def landpage():
+    img = get_img_as_base64("Pic/arara.png")
+    page_bg_img = f"""
+    <style>
+    [data-testid="stAppViewContainer"] > .main {{
+    background-image: url("data:image/png;base64,{img}");
+    background-size: cover;
+    }}
+    [data-testid="stHeader"] {{
+    background: rgba(0,0,0,0);
+    }}
+    </style>
+    """
+    return page_bg_img
+
 def indisp(inicio, fim, mes):
     ws = sh.worksheet(mes)
     df = pd.DataFrame(ws.get_all_values()[1:])
@@ -36,11 +59,10 @@ def sebo():
     df = pd.DataFrame(ws.get_all_values()).iloc[18:53, :4]
     df.columns = ["Piloto", "Horas Voadas","Data",'Último Voo']
     df = df.drop("Data",axis=1)
-    pd.to_timedelta(df["Horas Voadas"]) / datetime.timedelta(hours=1)
-    df = df.sort_values(by='Horas Voadas', ascending=False)
+    df["hora"] = pd.to_timedelta(df["Horas Voadas"]) / timedelta(hours=1)
+    df = df.sort_values(by='hora', ascending=False).drop('hora',axis=1)
     df.set_index("Piloto", inplace=True)
     df['Último Voo'] = df['Último Voo'].astype('int')
-    # df = df.style.applymap(desadapt, subset=['Último Voo'])
     return df
 
 # Labels quadrinhos
@@ -82,12 +104,12 @@ def plan(mes):
     meta = pd.DataFrame(ws.get_all_values()[1:]).set_index(0)
     time = [pd.to_timedelta(meta.iloc[:, i]) for i in range(int(mes))]
     meta = pd.DataFrame(time).T
-    meta = meta.sum(axis=1) / datetime.timedelta(hours=1)
+    meta = meta.sum(axis=1) / timedelta(hours=1)
 
     ws = sh.worksheet("HORAS DE VOO")
     voado = pd.DataFrame(ws.get_all_values()).iloc[18:53, :3]
     voado.columns = ["Piloto", "Horas Voadas", 'Último Voo']
-    voado = pd.to_timedelta(voado['Horas Voadas']) / datetime.timedelta(hours=1)
+    voado = pd.to_timedelta(voado['Horas Voadas']) / timedelta(hours=1)
     voado.index = meta.index
     diff = meta - voado
     diff = pd.DataFrame(diff)
@@ -111,22 +133,44 @@ def convert_time(number,string=True):
       else:
         return str(f'{h}'+':'+f'{m}')
   else:
-    return int(h),m
+    return int(h), m
+
+def serie_to_timedelta(serie, sum=False):
+    ajust_serie = serie.apply(lambda x: f'{x}:00')
+    timedelta_serie = pd.to_timedelta(ajust_serie)
+    if sum == False:
+        return timedelta_serie
+    else:
+        hours = timedelta_serie.sum().seconds / 3600
+        result = convert_time(hours)
+        return result
 
 #Combustível em rota
 def fuel_trip(ete_route, ete_altn):
     fuel_trip = int(700*(ete_route+ete_altn+0.75))
     return fuel_trip
 
+@st.cache_data
+def data_icao():
+    icao = pd.read_excel("Plan/ICAO.xlsx").set_index("DESIG")
+    return icao
+
+@st.cache_data
+def data_icao_label():
+    icao = data_icao()
+    labels = icao.index.to_list()
+    labels.extend(icao.index)
+    labels.extend(icao.index)
+    labels.extend(icao.index)
+    return labels
+
 #função planejamento
 def braplan(data,hora,rota,alternativa):
-    icao = pd.read_excel("Plan/ICAO.xlsx").set_index("DESIG")
+    icao = data_icao()
     plans = []
     for i in range(len(alternativa)):
         #Ajuste da data para Datetime
         dep_dt = datetime.combine(data,hora)
-        # format_string = "%d-%m-%Y"
-        # dep_dt = datetime.strptime(date_string, format_string)
 
         #Campo Hora(Z)
         if i ==0:
@@ -139,9 +183,6 @@ def braplan(data,hora,rota,alternativa):
         dep = rota[i]
         arr = rota[i+1]
         alt = alternativa[i]
-
-        #Campo TEMPO SOLO
-        tempo_solo = "1:30"
 
         #trip
         trip = rota[i:i+2] + [alt]
@@ -182,8 +223,10 @@ def braplan(data,hora,rota,alternativa):
             "COMB_ROUTE": comb_route
            }
         plans.append(plan)
+        plans = pd.DataFrame(plans)
+        plans['DATA'] = plans.DATA.apply(lambda x: x.strftime('%d/%m/%y'))
 
-    return pd.DataFrame(plans)
+    return plans
 
 #Não abastece
 def disp(df, noabast, PBO):
@@ -198,3 +241,28 @@ def disp(df, noabast, PBO):
     except:
         pass
     return df
+
+@st.cache_data
+def convert_df(df):
+        return df.to_csv(index=False).encode('utf-8')
+
+@st.cache_data
+def workload():
+    wb = load_workbook('OM/OM.xlsx')
+    return wb
+
+def excel_to_bytes(wb):
+            bytes_io = BytesIO()
+            wb.save(bytes_io)
+            bytes_data = bytes_io.getvalue()
+            bytes_io.close()
+            return bytes_data
+
+@st.cache_data
+def efetivo():
+    efetivo = pd.read_excel('OM/efetivo.xlsx').set_index("trigrama")
+    return efetivo
+
+def trigname(df, lista_trig):
+  comp_name = [df.loc[trig].nome for trig in lista_trig]
+  return comp_name
