@@ -163,14 +163,15 @@ def data_icao_label():
     labels.extend(icao.index)
     labels.extend(icao.index)
     return labels
-
+    
 #função planejamento
 def braplan(data,hora,rota,alternativa):
     icao = data_icao()
     plans = []
     for i in range(len(alternativa)):
         #Ajuste da data para Datetime
-        dep_dt = datetime.combine(data,hora)
+        dep_dt = datetime.combine(data, hora)
+        data_format = data.strftime('%d/%m/%y')
 
         #Campo Hora(Z)
         if i ==0:
@@ -211,7 +212,7 @@ def braplan(data,hora,rota,alternativa):
         comb_route = mround(comb_route,50)
 
         #Linha do planejamento
-        plan = {"DATA": data,
+        plan = {"DATA": data_format,
             "HORA(Z)":hora_z,
             "DEP":dep,
             "TEV":tev_route,
@@ -223,10 +224,7 @@ def braplan(data,hora,rota,alternativa):
             "COMB_ROUTE": comb_route
            }
         plans.append(plan)
-        plans = pd.DataFrame(plans)
-        plans['DATA'] = plans.DATA.apply(lambda x: x.strftime('%d/%m/%y'))
-
-    return plans
+    return pd.DataFrame(plans)
 
 #Não abastece
 def disp(df, noabast, PBO):
