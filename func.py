@@ -141,8 +141,9 @@ def serie_to_timedelta(serie, sum=False):
     if sum == False:
         return timedelta_serie
     else:
+        days = timedelta_serie.sum().days
         hours = timedelta_serie.sum().seconds / 3600
-        result = convert_time(hours)
+        result = convert_time(hours +  days*24)
         return result
 
 #Combustível em rota
