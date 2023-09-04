@@ -324,7 +324,7 @@ if pages == "Ordem de Missão":
             for n in range(len_plan):
                 om.insert_rows(15 + n + sum_len)
                 for i in range(10):
-                    om.cell(15 + n + sum_len, i + 1).value = df.iloc[:, i][0]
+                    om.cell(15 + n + sum_len, i + 1).value = df.iloc[n, i]
                     om.cell(15 + n + sum_len, i + 1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
                     om.cell(15 + n + sum_len, i + 1).alignment = Alignment(horizontal='center')
 
