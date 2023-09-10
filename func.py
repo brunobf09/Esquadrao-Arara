@@ -265,3 +265,8 @@ def efetivo():
 def trigname(df, lista_trig):
   comp_name = [df.loc[trig].nome for trig in lista_trig]
   return comp_name
+
+def zimbra(df, lista_trig):
+    zimbra = [df.loc[trig].email for trig in lista_trig]
+    zimbra = str(zimbra).replace(",", ";").replace("[", " ").replace("]", " ").replace("'", " ")
+    return zimbra
