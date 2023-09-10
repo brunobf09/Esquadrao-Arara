@@ -239,14 +239,14 @@ if pages == "Planejamento de Missão":
                 mime='text/csv',
             )
 
-#Page - Ordem de missão
+# Page - Ordem de missão
 if pages == "Ordem de Missão":
     # Título da página
     st.title('**Ordem de Missão**')
     # Config
     thin = Side(border_style="thin", color="000000")
 
-    #Inputs OM
+    # Inputs OM
     arquivo_upload = st.file_uploader("Faça upload do planejamento", type=["csv"])
     efetivo = f.efetivo()
 
@@ -270,20 +270,19 @@ if pages == "Ordem de Missão":
     with col1:
         pil = st.multiselect('Selecione os Pilotos:', efetivo.index, key="pil")
     with col2:
-        mec = st.multiselect('Selecione os Mecânicos:', efetivo.index,  key="mec")
+        mec = st.multiselect('Selecione os Mecânicos:', efetivo.index, key="mec")
     with col3:
         lm = st.multiselect('Selecione os Loadmaster:', efetivo.index, key="lm")
 
-    aeronave = st.selectbox("Selecione a Aeronave:", ['','FAB2802', 'FAB2805', 'FAB2809'])
+    aeronave = st.selectbox("Selecione a Aeronave:", ['', 'FAB2802', 'FAB2805', 'FAB2809'])
     detalhamento = st.text_area("Detalhamento da missão:")
 
-
     if arquivo_upload is not None:
-        #carregar arquivos
+        # carregar arquivos
         efetivo = f.efetivo()
         df = pd.read_csv(arquivo_upload, sep=',')
 
-        #Inicializador
+        # Inicializador
         gerar_om = st.button("Gerar OM")
         if gerar_om:
             wb = f.workload()
@@ -302,7 +301,12 @@ if pages == "Ordem de Missão":
             om['X1'].value = "/ ".join(pil + mec + lm)
             om['X2'].value = missao
 
-            pil = f.trigname(efetivo,pil)
+            trip = pil + mec + lm
+            zimbra = f.zimbra(efetivo, trip)
+            om['O2'] = zimbra
+            om['O3'] = f'OM{om_number} {missao}'
+
+            pil = f.trigname(efetivo, pil)
             mec = f.trigname(efetivo, mec)
             lm = f.trigname(efetivo, lm)
 
@@ -319,6 +323,7 @@ if pages == "Ordem de Missão":
                 om.cell(13 + n + len(pil) + len(mec), 1).value = l
 
             sum_len = len(pil) + len(mec) + len(lm)
+
             # plan
             len_plan = len(df)
             for n in range(len_plan):
@@ -328,14 +333,39 @@ if pages == "Ordem de Missão":
                     om.cell(15 + n + sum_len, i + 1).border = Border(top=thin, left=thin, right=thin, bottom=thin)
                     om.cell(15 + n + sum_len, i + 1).alignment = Alignment(horizontal='center')
 
+            line1 = 16 + sum_len + len_plan
+            line2 = 24 + sum_len + len_plan
+            merge = f'A{line1}:J{line2}'
+            om.merge_cells(merge)
+            # om.row_dimensions[line].height = 160
+
+            # Pedido de lanche
+            lanche = wb['Lanche de Bordo']
+            tripulacao = pil + mec + lm
+
+            # Inputs
+            lanche['A16'] = f'DESTINO: {df.ARR[0]}'
+            lanche['AZ14'] = df['HORA(Z)'][0]
+            lanche['A20'] = f'Qtd de Lanches: {len(tripulacao)}'
+
+            for n, t in enumerate(tripulacao):
+                lanche.insert_rows(25 + n)
+                lanche.cell(25 + n, 1).value = t
+                lanche.cell(25 + n, 6).value = 'BAMN'
+                lanche.cell(25 + n, 6).alignment = Alignment(horizontal='center')
+                lanche.cell(25 + n, 7).value = 1
+                lanche.cell(25 + n, 7).alignment = Alignment(horizontal='center')
+                lanche.cell(25 + n, 8).value = 0
+                lanche.cell(25 + n, 8).alignment = Alignment(horizontal='center')
+
             with st.spinner('Confeccionando OM...'):
-                time.sleep(5)
+                time.sleep(3)
 
             st.success("Ordem de Missão pronta para download!")
             # Criar um botão no Streamlit para baixar o arquivo
             bytes_data = f.excel_to_bytes(wb)
             st.download_button('Baixar OM', data=bytes_data, file_name=f'OM{om_number} {missao}.xlsx',
-                                   mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                               mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 
