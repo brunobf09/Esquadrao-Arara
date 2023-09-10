@@ -183,8 +183,13 @@ if pages == "Planejamento de Missão":
         #inputs boxes
         data = st.date_input('Início da Missão', key=f'data_{i}', format="DD/MM/YYYY")
         hora = st.time_input('Horário da Decolagem', datetime.time(12, 00), key=f'hora_{i}', step=300)
-        rota = st.multiselect("Selecione a Rota",labels,["SBMN"], key=f'rota_{i}')
-        alternativa = st.multiselect("Selecione as Alternativas",labels,max_selections=(len(rota)-1), key=f'alt_{i}')
+        rota = st.multiselect("Selecione a Rota",labels, key=f'rota_{i}')
+        try:
+            alternativa = st.multiselect("Selecione as Alternativas", labels, max_selections=(len(rota) - 1),
+                                     key=f'alt_{i}')
+        except:
+            break
+            
         noabast = st.multiselect("Não Abastece",labels, key=f'abast_{i}')
 
         #plan fuction
