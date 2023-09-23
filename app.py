@@ -168,7 +168,7 @@ if pages == "Planejamento de Missão":
     with st.sidebar:
         n_days = st.number_input('Número de Dias', 1)
         tripul = st.number_input('Tripulantes', 5)
-        aeronave = st.selectbox("Selecione a Aeronave", ['FAB2802', 'FAB2805', 'FAB2809'])
+        aeronave = st.selectbox("Selecione a Aeronave", ['FAB2803', 'FAB2805', 'FAB2809'])
         pb = {'FAB2800': 12924, 'FAB2802': 12584, 'FAB2803': 12587, 'FAB2805': 12227, 'FAB2809': 12446}
         PBO = pb.get(aeronave) + 300 + (tripul * 100)
 
