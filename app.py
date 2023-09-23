@@ -10,12 +10,12 @@ st.set_page_config(page_title="Esquadrão Arara")
 
 # Sidebar
 with st.sidebar:
-    #Style
+    # Style
     st.markdown("<h1 style='text-align: center; "
                 "margin-top:-80px; color: "
                 "black;'"
                 ">Tudo Sob Nossas Asas!</h1>", unsafe_allow_html=True)
-    st.markdown( """
+    st.markdown("""
         <style>
             [data-testid=stSidebar] [data-testid=stImage]{
                 text-align: center;
@@ -27,38 +27,40 @@ with st.sidebar:
             }
         </style>
         """, unsafe_allow_html=True)
-    #content
+    # content
     st.image("Pic/bolacha.png")
-    pages = st.selectbox('Selecione a página desejada', ['','Escala de Voo','Planejamento de Missão','Ordem de Missão'])
+    pages = st.selectbox('Selecione a página desejada',
+                         ['', 'Escala de Voo', 'Planejamento de Missão', 'Ordem de Missão'])
 
-#landpage
+# landpage
 if pages == '':
-    #Style
+    # Style
     st.markdown(f.landpage(), unsafe_allow_html=True)
     st.markdown("<h1 style= margin-top:-100px;>"
-                "Bem-vindo ao Esquadrão Arara</h1>",unsafe_allow_html=True)
-    st.markdown('<p style= margin-top:-45px;> Por: Bruno Brasil</p>',unsafe_allow_html=True)
+                "Bem-vindo ao Esquadrão Arara</h1>", unsafe_allow_html=True)
+    st.markdown('<p style= margin-top:-45px;> Por: Bruno Brasil</p>', unsafe_allow_html=True)
 
-#Page - Escala
+# Page - Escala
 if pages == "Escala de Voo":
     # Page desing
     st.title('**Escala de Voo**')
 
-    #options box
-    options = st.selectbox('Selecione a função desejada:',["","Disponibilidade","Pau de Sebo", "Quadrinhos","Escala"])
+    # options box
+    options = st.selectbox('Selecione a função desejada:',
+                           ["", "Disponibilidade", "Pau de Sebo", "Quadrinhos", "Escala"])
 
-    calendario = {1:"JANEIRO", 2:"FEVEREIRO", 3:"MARÇO",4:"ABRIL",5:"MAIO",
-                      6:"JUNHO",7:"JULHO",8:"AGOSTO",9:"SETEMBRO",10:"OUTUBRO",
-                      11:"NOVEMBRO",12:"DEZEMBRO"}
+    calendario = {1: "JANEIRO", 2: "FEVEREIRO", 3: "MARÇO", 4: "ABRIL", 5: "MAIO",
+                  6: "JUNHO", 7: "JULHO", 8: "AGOSTO", 9: "SETEMBRO", 10: "OUTUBRO",
+                  11: "NOVEMBRO", 12: "DEZEMBRO"}
 
     if options == "Disponibilidade":
-        inicio = st.date_input('Início da Disponibilidade',format='DD/MM/YYYY')
-        fim = st.date_input('Término da Disponibilidade',format="DD/MM/YYYY")
+        inicio = st.date_input('Início da Disponibilidade', format='DD/MM/YYYY')
+        fim = st.date_input('Término da Disponibilidade', format="DD/MM/YYYY")
         mes = calendario.get(inicio.month)
 
         if fim >= inicio:
             try:
-                st.table(f.indisp(inicio.day,fim.day,mes))
+                st.table(f.indisp(inicio.day, fim.day, mes))
             except:
                 pass
 
@@ -71,63 +73,59 @@ if pages == "Escala de Voo":
         labels = f.label_quad()
         quadrinho = st.selectbox('Selecione o quadrinho desejado:', labels)
 
-        #Filtro por operacionalidade
-        if quadrinho!="":
+        # Filtro por operacionalidade
+        if quadrinho != "":
             funcao = st.multiselect('Filtrar por função a bordo:',
-                                ['PILOTO', 'MECÂNICO', 'LOADMASTER'],
-                                ['PILOTO', 'MECÂNICO', 'LOADMASTER'])
+                                    ['PILOTO', 'MECÂNICO', 'LOADMASTER'],
+                                    ['PILOTO', 'MECÂNICO', 'LOADMASTER'])
 
             op = st.multiselect('Filtrar por operacionalidade:',
                                 ['IN', 'OP', 'PB', 'AL'],
                                 ['IN', 'OP', 'PB', 'AL'])
 
-        #checkbox para verificar disponibilidade
+        # checkbox para verificar disponibilidade
         disp = st.checkbox('DISPONIBILIDADE')
 
-        try:
-            #Quadrinho + disponibilidade
-            if disp:
-                inicio = st.date_input('Início da Disponibilidade',format="DD/MM/YYYY")
-                fim = st.date_input('Término da Disponibilidade',format="DD/MM/YYYY")
-                mes = calendario.get(inicio.month)
-                ind = f.indisp_quad(inicio.day, fim.day, mes)
-                df = f.quad(quadrinho,funcao,op)
-                st.table(df[df.index.isin(ind, level=1)])
-            # Somente Quadrinho
-            else:
-                st.table(f.quad(quadrinho,funcao,op))
-        except:
-            pass
+        # Quadrinho + disponibilidade
+        if disp:
+            inicio = st.date_input('Início da Disponibilidade', format="DD/MM/YYYY")
+            fim = st.date_input('Término da Disponibilidade', format="DD/MM/YYYY")
+            mes = calendario.get(inicio.month)
+            ind = f.indisp_quad(inicio.day, fim.day, mes)
+            df = f.quad(quadrinho, funcao, op)
+            st.table(df[df.index.isin(ind, level=1)])
+        # Somente Quadrinho
+        else:
+            st.table(f.quad(quadrinho, funcao, op))
 
     if options == "Escala":
-        #Quadrinhos
+        # Quadrinhos
         labels = f.label_quad()
         quadrinho = st.selectbox('Selecione o quadrinho desejado:', labels)
 
-        if quadrinho!="":
-            #Datas
-            inicio = st.date_input('Início da Disponibilidade',format="DD/MM/YYYY")
-            fim = st.date_input('Término da Disponibilidade',format="DD/MM/YYYY")
+        if quadrinho != "":
+            # Datas
+            inicio = st.date_input('Início da Disponibilidade', format="DD/MM/YYYY")
+            fim = st.date_input('Término da Disponibilidade', format="DD/MM/YYYY")
             mes = calendario.get(inicio.month)
             mes_plan = inicio.month
-            #Disponibilidades
+            # Disponibilidades
             ind = f.indisp_quad(inicio.day, fim.day, mes)
 
-            #Planejamento de horas de voo
+            # Planejamento de horas de voo
             df = f.plan(mes_plan)
             quad = f.quad(quadrinho, 'PILOTO', ['IN', 'OP', 'PB', 'AL'])
             quad = quad.reset_index().set_index(1)
-            df = quad.join(df).sort_values(by=['Meta','Quadrinhos'], ascending=[False,True]).drop(0,axis=1)
+            df = quad.join(df).sort_values(by=['Meta', 'Quadrinhos'], ascending=[False, True]).drop(0, axis=1)
             sebo = f.sebo()
             df = df.join(sebo)
             prioridade = df[df.index.isin(ind, level=0)]
-            prioridade = prioridade.reset_index().set_index(9) #rescrever depois
-            prioridade.columns = ["Pilotos", "Quadrinhos", 'Meta', 'Horas Voadas','Último Voo']
-            prioridade = prioridade[["Pilotos", "Meta", 'Quadrinhos', 'Horas Voadas','Último Voo']]
+            prioridade = prioridade.reset_index().set_index(9)  # rescrever depois
+            prioridade.columns = ["Pilotos", "Quadrinhos", 'Meta', 'Horas Voadas', 'Último Voo']
+            prioridade = prioridade[["Pilotos", "Meta", 'Quadrinhos', 'Horas Voadas', 'Último Voo']]
             prioridade.Meta = prioridade.Meta.astype('int')
             prioridade['Último Voo'] = prioridade['Último Voo'].astype('int')
             prioridade.drop('Horas Voadas', axis=1, inplace=True)
-
 
             try:
                 st.subheader('Instrutores')
@@ -161,59 +159,63 @@ if pages == "Escala de Voo":
             except KeyError as err:
                 st.write("Nenhum piloto disponível.")
 
-#Page - Plan
+# Page - Plan
 if pages == "Planejamento de Missão":
-    #Título da página
+    # Título da página
     st.title('**Planejamento de Missão**')
 
-    #sidebar
+    # sidebar
     with st.sidebar:
         n_days = st.number_input('Número de Dias', 1)
-        tripul = st.number_input('Tripulantes',5)
-        aeronave = st.selectbox("Selecione a Aeronave", ['FAB2802','FAB2805','FAB2809'])
-        pb = {'FAB2800':12924,'FAB2802':12584,'FAB2803':12587,'FAB2805':12227,'FAB2809':12446}
-        PBO = pb.get(aeronave) + 300 + (tripul*100)
+        tripul = st.number_input('Tripulantes', 5)
+        aeronave = st.selectbox("Selecione a Aeronave", ['FAB2802', 'FAB2805', 'FAB2809'])
+        pb = {'FAB2800': 12924, 'FAB2802': 12584, 'FAB2803': 12587, 'FAB2805': 12227, 'FAB2809': 12446}
+        PBO = pb.get(aeronave) + 300 + (tripul * 100)
 
-
-    #inputs
+    # inputs
     labels = f.data_icao_label()
     i = 0
-    total_plan=[]
+    total_plan = []
     while i < n_days:
-        #inputs boxes
+        # inputs boxes
         data = st.date_input('Início da Missão', key=f'data_{i}', format="DD/MM/YYYY")
         hora = st.time_input('Horário da Decolagem', datetime.time(12, 00), key=f'hora_{i}', step=300)
-        rota = st.multiselect("Selecione a Rota",labels, key=f'rota_{i}')
+        rota = st.multiselect("Selecione a Rota", labels, key=f'rota_{i}')
         try:
             alternativa = st.multiselect("Selecione as Alternativas", labels, max_selections=(len(rota) - 1),
                                      key=f'alt_{i}')
         except:
             break
-            
-        noabast = st.multiselect("Não Abastece",labels, key=f'abast_{i}')
 
-        #plan fuction
+        noabast = st.multiselect("Não Abastece", labels, key=f'abast_{i}')
+
+        # plan fuction
+
         plan = f.braplan(data, hora, rota, alternativa)
-        plan = f.disp(plan,noabast, PBO)
+        plan = f.disp(plan, noabast, PBO)
         total_plan.append(plan)
 
-        #table check
+
+        # table check
         st.table(plan)
         checked = st.checkbox('Checked', key=f'checked_{i}')
 
         if checked:
-            i+=1
-            checked=False
+            i += 1
+            checked = False
         else:
-            checked=False
+            checked = False
             break
 
-    #End Plan
+
+    # End Plan
     def edit_save():
-            if st.session_state.save:
-                st.session_state["final_data"] = edit_plan
-                st.session_state.edit = False
-    if i==n_days:
+        if st.session_state.save:
+            st.session_state["final_data"] = edit_plan
+            st.session_state.edit = False
+
+
+    if i == n_days:
         st.title("Planejamento Completo")
         edit = st.checkbox('Editar', key='edit')
         end_plan = pd.concat(total_plan)
@@ -228,7 +230,7 @@ if pages == "Planejamento de Missão":
                 edit_plan = st.data_editor(edit_plan, hide_index=True, on_change=edit_save)
                 save = st.button("Salvar alteração", key='save', on_click=edit_save)
 
-        elif edit==False:
+        elif edit == False:
             if "final_data" in st.session_state:
                 end_plan = st.session_state["final_data"]
                 st.table(end_plan)
@@ -279,7 +281,7 @@ if pages == "Ordem de Missão":
     with col3:
         lm = st.multiselect('Selecione os Loadmaster:', efetivo.index, key="lm")
 
-    aeronave = st.selectbox("Selecione a Aeronave:", ['', 'FAB2802', 'FAB2805', 'FAB2809'])
+    aeronave = st.selectbox("Selecione a Aeronave:", ['', 'FAB2803', 'FAB2805', 'FAB2809'])
     detalhamento = st.text_area("Detalhamento da missão:")
 
     if arquivo_upload is not None:
@@ -342,7 +344,14 @@ if pages == "Ordem de Missão":
             line2 = 24 + sum_len + len_plan
             merge = f'A{line1}:J{line2}'
             om.merge_cells(merge)
-            # om.row_dimensions[line].height = 160
+
+            # print
+            om.print_options.horizontalCentered = True
+            om.page_setup.orientation = om.ORIENTATION_PORTRAIT
+            om.page_setup.paperSize = om.PAPERSIZE_A4
+            len_print = 38 + sum_len + len_plan
+            area_print = f'A1:J{len_print}'
+            om.print_area = area_print
 
             # Pedido de lanche
             lanche = wb['Lanche de Bordo']
@@ -363,6 +372,13 @@ if pages == "Ordem de Missão":
                 lanche.cell(25 + n, 8).value = 0
                 lanche.cell(25 + n, 8).alignment = Alignment(horizontal='center')
 
+            lanche.print_options.horizontalCentered = True
+            lanche.page_setup.orientation = lanche.ORIENTATION_PORTRAIT
+            lanche.page_setup.paperSize = lanche.PAPERSIZE_A4
+            len_print = 34 + len(tripulacao)
+            area_print = f'A1:I{len_print}'
+            lanche.print_area = area_print
+
             with st.spinner('Confeccionando OM...'):
                 time.sleep(3)
 
@@ -371,10 +387,6 @@ if pages == "Ordem de Missão":
             bytes_data = f.excel_to_bytes(wb)
             st.download_button('Baixar OM', data=bytes_data, file_name=f'OM{om_number} {missao}.xlsx',
                                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
-
-
-
 
 
 
